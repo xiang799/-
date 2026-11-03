@@ -52,7 +52,7 @@ function panelHeading(eyebrow, title, right = '') {
   return `<div class="panel-heading"><div><p class="eyebrow">${eyebrow}</p><h2 id="panel-title" tabindex="-1">${title}</h2></div>${right}</div>`;
 }
 function card(p) {
-  const cover = p.cover ? `<img src="${esc(asset(p.id === 'yaozhi' ? 'yaozhi-preview.webp' : p.cover))}" alt="${esc(p.title)}作品预览" loading="lazy" decoding="async">` : `<div class="cover-placeholder"><small>${esc(p.en)}</small><b>${p.pending ? '待补充' : 'AI / 01'}</b><small>${p.pending ? '项目材料整理中' : '训练研究 · 暂无成果图'}</small></div>`;
+  const cover = p.cover ? `<img src="${esc(asset(p.id === 'yaozhi' ? 'yaozhi-preview.webp' : p.cover))}" alt="${esc(p.title)}作品预览" loading="eager" decoding="async">` : `<div class="cover-placeholder"><small>${esc(p.en)}</small><b>${p.pending ? '待补充' : 'AI / 01'}</b><small>${p.pending ? '项目材料整理中' : '训练研究 · 暂无成果图'}</small></div>`;
   return `<article class="project-card">${link(`work/${p.id}/`, `<div class="project-cover">${cover}<span class="card-open" aria-hidden="true">↗</span></div><span class="content-type">${types[p.contentType]}${p.pending ? ' · 材料待补充' : ''}</span><h3>${esc(p.title)}</h3><p class="subtitle">${esc(p.subtitle)}</p><div class="tag-line">${p.categories.map(c => `<span>${categories[c]}</span>`).join('')}</div><p class="card-role">${esc(p.roleShort)}</p>`)}</article>`;
 }
 function workView(params) {
