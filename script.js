@@ -187,6 +187,10 @@ function closeImage() {
   else { const next = new URL(location.href); next.searchParams.delete('image'); next.searchParams.delete('caption'); history.replaceState(history.state, '', next); viewer.close(); syncLock(); }
 }
 document.addEventListener('click', event => {
+  const sceneObject = event.target.closest('[data-scene]');
+  if (sceneObject && window.STUDIO_3D?.ready && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
+    event.preventDefault(); lastOpener = sceneObject; window.STUDIO_3D.activate(sceneObject.dataset.scene); return;
+  }
   const anchor = event.target.closest('a[data-nav]');
   if (anchor && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey && event.button === 0) {
     const target = new URL(anchor.href);
@@ -248,6 +252,9 @@ function selectFeature(id) {
   $('.monitor').href = url('work/' + id + '/');
   $('.monitor').setAttribute('aria-label', '电脑：查看' + p.title);
   document.querySelectorAll('[data-feature]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.feature === id)));
+  const sceneMonitor = document.querySelector('[data-scene="monitor"]');
+  if (sceneMonitor) sceneMonitor.href = url('work/' + id + '/');
+  window.dispatchEvent(new CustomEvent('studio:feature', { detail: { id } }));
 }
 document.querySelectorAll('[data-count]').forEach(el => el.textContent = String(PROJECTS.filter(p => p.categories.includes(el.dataset.count)).length).padStart(2, '0'));
 // Music is independent of main panels and never resumes automatically on reload.
@@ -345,3 +352,11 @@ history.replaceState({ ...history.state, app: history.state?.app || false, scrol
 selectFeature('dayibu');
 renderRoute();
 if (CONFIG.guestbookApi) loadGuestbook();
+
+// The 3D stage enhances real navigation; content remains independent of WebGL.
+window.addEventListener('studio:open', event => {
+  const detail = event.detail;
+  if (detail.route) navigate(detail.route);
+  if (detail.action === 'music') openMusic();
+  if (detail.action === 'compose') openComposer();
+});

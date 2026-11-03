@@ -1,11 +1,13 @@
 """Build GitHub Pages-compatible static route entry points; no dependencies."""
 from pathlib import Path
 import json
+import hashlib
 from html import escape
 ROOT=Path(__file__).resolve().parents[1]
 projects=json.loads((ROOT/'content/projects.json').read_text())
 (ROOT/'content/projects.js').write_text('window.PROJECTS = '+json.dumps(projects,ensure_ascii=False)+';\n')
-template=(ROOT/'templates/workbench.html').read_text()
+version = hashlib.sha256(b''.join((ROOT/name).read_bytes() for name in ['styles.css','script.js','studio.js','content/projects.js','content/site-config.js'])).hexdigest()[:12]
+template=(ROOT/'templates/workbench.html').read_text().replace('__VERSION__',version)
 routes=['','work','process','cmf','about','contact','guestbook']+['work/'+p['id'] for p in projects]
 for route in routes:
  folder=ROOT/route;folder.mkdir(exist_ok=True,parents=True)
