@@ -1,0 +1,7 @@
+{
+  "name": "chen-xiang-guestbook",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-11-03",
+  "vars": { "ALLOWED_ORIGIN": "https://xiang799.github.io" },
+  "d1_databases": [{ "binding": "DB", "database_name": "chen-xiang-guestbook", "database_id": "REPLACE_WITH_CREATED_DATABASE_ID" }]
+}
