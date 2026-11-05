@@ -1,0 +1,74 @@
+:root{--intro-blue:#9dd8e4;--intro-ink:#333536;--intro-muted:#8197a0;--intro-font:"Segoe UI","Helvetica Neue",Arial,sans-serif}
+.workspace-shell{transition:opacity 700ms ease;min-height:100dvh}
+.intro-active{overflow:hidden}
+.intro-active .workspace-shell{opacity:0;visibility:hidden}
+.intro{position:fixed;inset:0;z-index:10000;overflow:hidden;isolation:isolate;background:#fff;color:var(--intro-ink);font-family:var(--intro-font);transition:opacity 750ms ease,visibility 750ms;--scene-scale:1;--pointer-x:0px;--pointer-y:0px}
+.intro[hidden]{display:none}
+.intro.is-leaving{opacity:0;visibility:hidden;pointer-events:none}
+.intro-top{position:absolute;inset:6.1% 5% auto;display:flex;justify-content:space-between;align-items:center;gap:20px;z-index:2}
+.intro-edition{font:10px/1.4 "Cascadia Code",Consolas,monospace;letter-spacing:1.45px;color:#95aeb7}
+.intro-signature{font:12px/1.4 var(--intro-font);letter-spacing:.7px;color:#7d949e}
+.intro-scene{position:absolute;left:50%;top:50%;width:1440px;height:810px;transform:translate(-50%,-50%) scale(var(--scene-scale));transform-origin:center;pointer-events:none}
+.intro-object{position:absolute;pointer-events:auto;transform:translate(var(--pointer-x),var(--pointer-y));transition:transform 900ms cubic-bezier(.2,.6,.2,1)}
+.intro-object__entry{width:100%;height:100%;animation:object-arrive 1.7s cubic-bezier(.19,1,.22,1) both;animation-delay:var(--delay)}
+.intro-object__float{width:100%;height:100%;animation:object-float var(--float-time,6s) ease-in-out infinite;animation-delay:var(--float-delay,0s)}
+.intro-object img{display:block;width:100%;height:100%;filter:blur(var(--softness,5.2px));opacity:.88;user-select:none;-webkit-user-drag:none;transition:filter 800ms,opacity 800ms}
+.intro-object:hover img{filter:blur(3.3px);opacity:.95}
+.intro-object--turntable{left:125px;top:205px;width:270px;height:270px;--delay:.05s;--float-time:7s;--float-delay:-1s;--softness:5.4px}
+.intro-object--typewriter{left:468px;top:231px;width:250px;height:226px;--delay:.22s;--float-time:6s;--float-delay:-2s;--softness:4.8px}
+.intro-object--computer{left:803px;top:225px;width:250px;height:287px;--delay:.36s;--float-time:7.5s;--float-delay:-4s;--softness:5.6px}
+.intro-object--swatches{left:1086px;top:208px;width:270px;height:245px;--delay:.48s;--float-time:6.5s;--float-delay:-3s;--softness:5px}
+.welcome{position:absolute;inset:0;margin:0;font-family:Arial,"Helvetica Neue",sans-serif;font-weight:400;font-size:92px;line-height:1;letter-spacing:-4px;pointer-events:none}
+.welcome-letter{position:absolute;left:var(--x);top:var(--y);display:block;animation:letter-arrive 1.3s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--delay)}
+.welcome-glyph{display:block;transform:rotate(var(--angle));animation:letter-float var(--time,7s) ease-in-out infinite;animation-delay:var(--idle-delay,0s)}
+.welcome-letter--w{--x:177px;--y:378px;--angle:-10deg;--delay:.28s;--time:7s}
+.welcome-letter--e1{--x:260px;--y:434px;--angle:9deg;--delay:.40s;--time:6.7s;--idle-delay:-1.4s}
+.welcome-letter--l{--x:436px;--y:430px;--angle:15deg;--delay:.52s;--time:7.3s;--idle-delay:-2.6s}
+.welcome-letter--c{--x:552px;--y:395px;--angle:-1deg;--delay:.64s;--time:8s;--idle-delay:-.4s}
+.welcome-letter--o{--x:734px;--y:440px;--angle:-5deg;--delay:.76s;--time:6.6s;--idle-delay:-1.9s}
+.welcome-letter--m{--x:819px;--y:412px;--angle:5deg;--delay:.88s;--time:7.6s;--idle-delay:-3.5s}
+.welcome-letter--e2{--x:1044px;--y:432px;--angle:0deg;--delay:1s;--time:7.1s;--idle-delay:-.8s}
+.welcome-dots{position:absolute;left:1198px;top:510px;display:flex;gap:9px;transform:rotate(8deg);animation:letter-arrive 1.3s 1.1s both}
+.welcome-dots i{display:block;width:9px;height:9px;background:var(--intro-ink);animation:dot-breathe 1.8s ease-in-out infinite}
+.welcome-dots i:nth-child(2){animation-delay:.22s}.welcome-dots i:nth-child(3){animation-delay:.44s}
+.intro-bottom{position:absolute;inset:auto 5% 6.7%;display:flex;justify-content:space-between;align-items:flex-end;gap:32px;z-index:2}
+.intro-name{display:flex;align-items:baseline;gap:6px;margin:0;font-size:25px;font-weight:300;letter-spacing:-1.1px;line-height:1.35}
+.intro-name span{font-size:17px;letter-spacing:-.7px}
+.intro-discipline{margin:7px 0 0;color:#899ca4;font-size:13px;font-weight:350;letter-spacing:-.1px}
+.intro-loading{width:258px;flex-shrink:0;position:relative;min-height:54px}
+.intro-loading__labels{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;color:#758f9c;font:11px/1.1 "Cascadia Code",Consolas,monospace}
+.intro-loading__labels span:first-child{letter-spacing:1.7px}
+.intro-track{height:3px;border-radius:3px;background:#eaf3f5;overflow:hidden}
+.intro-track__fill{width:100%;height:100%;background:var(--intro-blue);transform:scaleX(0);transform-origin:left;border-radius:3px;will-change:transform}
+.intro-hint{margin:11px 0 0;color:#a0b4bd;font-size:10px;line-height:1.6;letter-spacing:.05px}
+.intro-enter{display:none;position:absolute;z-index:3;left:50%;bottom:6.8%;transform:translateX(-50%);background:none;border:0;border-bottom:1px solid #c0d9e1;border-radius:0;padding:5px 0;font:11px var(--intro-font);letter-spacing:1px;color:#6e929f}
+.intro.is-preview.is-ready .intro-enter{display:block;animation:ready-in 700ms ease both}
+.intro.is-error .intro-enter{display:block;border-bottom-color:#a5b9c0;color:#5a7a87}
+.intro.is-error .intro-hint{color:#697f89;max-width:258px}
+.intro-fallback{position:absolute;z-index:3;left:50%;bottom:13%;transform:translateX(-50%);padding:9px 15px;border:1px solid #d5e9ee;background:white;border-radius:4px;color:#6d95a5;font-size:11px}
+.intro.is-paused *{animation-play-state:paused!important;transition:none!important}
+.intro.is-paused .intro-object__entry,.intro.is-paused .welcome-letter{opacity:1;transform:none}
+.intro.is-paused .intro-object__float,.intro.is-paused .welcome-glyph{animation:none}
+.intro.is-paused .welcome-glyph{transform:rotate(var(--angle))}
+@keyframes object-arrive{from{opacity:0;transform:translateY(20px) scale(.97);filter:blur(6px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+@keyframes object-float{0%,100%{transform:translateY(2px) rotate(-.25deg)}50%{transform:translateY(-6px) rotate(.35deg)}}
+@keyframes letter-arrive{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes letter-float{0%,100%{transform:translateY(0) rotate(var(--angle))}50%{transform:translateY(-5px) rotate(calc(var(--angle) + 1.5deg))}}
+@keyframes dot-breathe{0%,80%,100%{opacity:.85;transform:translateY(0)}40%{opacity:.35;transform:translateY(-3px)}}
+@keyframes ready-in{from{opacity:0;translate:0 5px}to{opacity:1;translate:0 0}}
+@media(max-width:600px){
+ .intro-top{inset:27px 6% auto;gap:12px}.intro-edition{font-size:8px;letter-spacing:1px}.intro-signature{font-size:10px;letter-spacing:.1px}
+ .intro-scene{width:390px;height:520px;top:46%}
+ .intro-object--turntable{left:12px;top:48px;width:163px;height:163px;--softness:3.3px}
+ .intro-object--typewriter{left:205px;top:75px;width:164px;height:148px;--softness:3px}
+ .intro-object--computer{left:22px;top:293px;width:162px;height:186px;--softness:3.4px}
+ .intro-object--swatches{left:200px;top:274px;width:193px;height:175px;--softness:3px}
+ .welcome{font-size:49px;font-weight:400;letter-spacing:-2px}
+ .welcome-letter--w{--x:19px;--y:220px}.welcome-letter--e1{--x:80px;--y:248px}.welcome-letter--l{--x:131px;--y:225px}.welcome-letter--c{--x:171px;--y:239px}.welcome-letter--o{--x:217px;--y:220px}.welcome-letter--m{--x:264px;--y:245px}.welcome-letter--e2{--x:324px;--y:225px}
+ .welcome-dots{left:346px;top:288px;gap:5px}.welcome-dots i{width:5px;height:5px}
+ .intro-bottom{inset:auto 6% 33px;gap:18px}.intro-name{font-size:19px;letter-spacing:-.8px;gap:4px}.intro-name span{font-size:12px;letter-spacing:0}.intro-discipline{font-size:9px;letter-spacing:-.1px;margin-top:6px}
+ .intro-loading{width:145px;min-height:49px}.intro-loading__labels{font-size:9px;margin-bottom:12px}.intro-loading__labels span:first-child{letter-spacing:1px}.intro-hint{font-size:8px;margin-top:9px;white-space:nowrap}
+ .intro-enter{bottom:112px;font-size:10px}
+}
+@media(max-height:560px) and (min-width:601px){.intro-top{top:5%}.intro-bottom{bottom:5%}.intro-name{font-size:20px}.intro-discipline{font-size:10px}.intro-loading{width:220px}.intro-enter{bottom:5%}}
+@media(prefers-reduced-motion:reduce){.intro *, .intro *::before,.intro *::after{animation:none!important;transition:none!important}.intro-object__entry,.welcome-letter{opacity:1;transform:none}.welcome-glyph{transform:rotate(var(--angle))}.intro-object__float{transform:none}.intro{transition-duration:150ms}.workspace-shell{transition-duration:150ms}}

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="270" height="310" viewBox="0 0 270 310">
+  <defs><linearGradient id="light" x2="0" y2="1"><stop stop-color="#F8FCFB"/><stop offset="1" stop-color="#B9E8ED"/></linearGradient></defs>
+  <path d="M45 29L229 36L247 57L242 183L224 200H43Z" fill="#A8D6E1"/>
+  <rect x="29" y="25" width="205" height="174" rx="21" fill="url(#light)"/>
+  <rect x="44" y="40" width="179" height="138" rx="12" fill="#8FC3D3"/>
+  <rect x="55" y="52" width="161" height="112" rx="7" fill="#79BED4"/>
+  <rect x="68" y="65" width="84" height="64" rx="2" fill="#D4EDF4"/>
+  <rect x="68" y="65" width="84" height="10" fill="#A8C9E7"/>
+  <g class="window"><rect x="123" y="100" width="77" height="47" rx="2" fill="#C5E7E9"/><rect x="123" y="100" width="77" height="9" fill="#A7B7DB"/></g>
+  <path d="M108 198H167L176 218H96Z" fill="#B9DDE4"/>
+  <rect x="78" y="214" width="115" height="13" rx="6" fill="#C9E4EA"/>
+  <rect x="15" y="231" width="238" height="38" rx="5" fill="#9DC5D2"/>
+  <path d="M25 247H111M192 248H235" stroke="#82B4C4" stroke-width="4"/>
+  <path d="M19 279H244L260 302H5Z" fill="#D2EAF0"/>
+  <path d="M34 285H230M25 293H240" stroke="#A4CFDC" stroke-width="3" stroke-dasharray="8 4"/>
+  <style>.window{animation:window 6s ease-in-out infinite}@keyframes window{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}@media(prefers-reduced-motion:reduce){.window{animation:none}}</style>
+</svg>

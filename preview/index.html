@@ -1,0 +1,44 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>陈湘 · 设计工作台</title><meta name="description" content="陈湘的个人作品集。产品设计、交互体验与 AIGC，一张可探索的工作台。"><link rel="stylesheet" href="loading.css"><link rel="stylesheet" href="site.css"><link rel="preload" href="welcome-assets/turntable.svg" as="image"><link rel="preload" href="welcome-assets/typewriter.svg" as="image"><link rel="preload" href="welcome-assets/computer.svg" as="image"><link rel="preload" href="welcome-assets/swatches.svg" as="image"><meta name="robots" content="noindex">
+</head><body class="intro-active">
+<section class="intro" id="welcome-intro" aria-label="欢迎来到陈湘的设计工作台">
+  <div class="intro-top">
+    <span class="intro-edition">PORTFOLIO / 2026</span>
+    <span class="intro-signature">陈湘的设计工作台</span>
+  </div>
+  <div class="intro-scene">
+    <div class="intro-object intro-object--turntable" aria-hidden="true"><div class="intro-object__entry"><div class="intro-object__float"><img src="welcome-assets/turntable.svg" alt="" width="270" height="270" decoding="async" draggable="false"></div></div></div>
+    <div class="intro-object intro-object--typewriter" aria-hidden="true"><div class="intro-object__entry"><div class="intro-object__float"><img src="welcome-assets/typewriter.svg" alt="" width="310" height="280" decoding="async" draggable="false"></div></div></div>
+    <div class="intro-object intro-object--computer" aria-hidden="true"><div class="intro-object__entry"><div class="intro-object__float"><img src="welcome-assets/computer.svg" alt="" width="270" height="310" decoding="async" draggable="false"></div></div></div>
+    <div class="intro-object intro-object--swatches" aria-hidden="true"><div class="intro-object__entry"><div class="intro-object__float"><img src="welcome-assets/swatches.svg" alt="" width="320" height="290" decoding="async" draggable="false"></div></div></div>
+    <h1 class="welcome" aria-label="Welcome">
+      <span class="welcome-letter welcome-letter--w" aria-hidden="true"><span class="welcome-glyph">W</span></span>
+      <span class="welcome-letter welcome-letter--e1" aria-hidden="true"><span class="welcome-glyph">E</span></span>
+      <span class="welcome-letter welcome-letter--l" aria-hidden="true"><span class="welcome-glyph">L</span></span>
+      <span class="welcome-letter welcome-letter--c" aria-hidden="true"><span class="welcome-glyph">C</span></span>
+      <span class="welcome-letter welcome-letter--o" aria-hidden="true"><span class="welcome-glyph">O</span></span>
+      <span class="welcome-letter welcome-letter--m" aria-hidden="true"><span class="welcome-glyph">M</span></span>
+      <span class="welcome-letter welcome-letter--e2" aria-hidden="true"><span class="welcome-glyph">E</span></span>
+      <span class="welcome-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+    </h1>
+  </div>
+  <div class="intro-bottom">
+    <div class="intro-identity"><p class="intro-name">Chen Xiang <span>陈湘</span></p><p class="intro-discipline">Product &amp; Interaction Design</p></div>
+    <div class="intro-loading">
+      <div class="intro-loading__labels"><span id="intro-loading-label">LOADING</span><span id="intro-percentage" aria-hidden="true">0%</span></div>
+      <div class="intro-track" role="progressbar" aria-label="工作台载入进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="intro-track__fill"></div></div>
+      <p class="intro-hint" id="intro-hint" role="status">正在布置工作台…</p>
+    </div>
+  </div>
+  <button class="intro-enter" id="intro-enter" type="button">进入工作台 ↗</button>
+<button class="intro-fallback" id="intro-fallback" hidden type="button">直接浏览作品 ↗</button></section>
+
+<div class="workspace-shell" id="workspace-shell" aria-hidden="true" inert>
+<header class="site-header"><nav class="site-nav" aria-label="网站导航"><button data-route="works">作品档案</button><button data-route="about">关于我</button><button data-route="music">音乐</button><button data-route="notes">留言</button><button data-route="contact">简历与联系</button></nav><span class="site-name">陈湘的设计工作台</span></header>
+<main id="view" aria-label="可以点击物件的三维设计工作台"><div class="scene-labels" id="scene-labels" hidden></div><div id="scene-tooltip" role="tooltip"></div><span id="status" role="status"></span></main>
+<p class="scene-help">移动鼠标，或点击一件你感兴趣的物品。</p>
+<footer class="site-footer"><div class="site-identity"><b>Chen Xiang 陈湘</b><p>Product & Interaction Design</p></div><div class="scene-tools" aria-label="工作台工具"><button data-view="0" aria-pressed="true">整体</button><button data-view="1" aria-pressed="false">正面</button><button data-view="2" aria-pressed="false">桌面</button><button data-view="3" aria-pressed="false">唱片角</button><span class="tool-divider"></span><button id="toggle-labels" aria-pressed="false">物件标记</button><button id="lamp" aria-pressed="true">关台灯</button><button id="replay-intro" aria-label="重播欢迎动画" title="重播欢迎动画">↻</button></div></footer>
+<aside class="mini-player" id="mini-player" aria-label="正在播放的音乐" hidden><img id="mini-cover" alt=""><button class="mini-open" data-route="music"><strong id="mini-title"></strong><small id="mini-artist"></small></button><span class="mini-player__pulse" aria-hidden="true"></span><button data-audio-toggle aria-label="播放音乐">▶</button></aside>
+<dialog class="content-panel" id="content-panel" aria-labelledby="panel-title"><header class="panel-header"><div><small id="panel-kicker"></small><h2 id="panel-title"></h2></div><button class="panel-close" id="panel-close" aria-label="返回工作台">×</button></header><div class="panel-content" id="panel-content"></div></dialog>
+<dialog class="lightbox" id="lightbox" aria-label="放大查看项目展板"><div class="lightbox-bar"><span id="lightbox-title"></span><label>缩放 <input id="lightbox-zoom" type="range" min="50" max="250" step="10" value="100" aria-label="展板缩放"></label><button class="panel-close" id="lightbox-close" aria-label="关闭放大查看">×</button></div><div class="lightbox-scroll"><img id="lightbox-image" alt=""></div></dialog>
+<audio id="desk-audio" preload="metadata"></audio><div class="toast" id="toast" role="status"></div>
+</div><noscript><style>.intro{display:none}.intro-active{overflow:auto}.workspace-shell{visibility:visible;opacity:1}</style><p>请启用 JavaScript 来探索工作台，或直接<a href="media/resume.pdf">打开简历 PDF</a>。</p></noscript><script src="loading.js"></script></body></html>

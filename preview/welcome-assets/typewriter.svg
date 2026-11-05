@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="310" height="280" viewBox="0 0 310 280">
+  <defs>
+    <linearGradient id="body" x2="1" y2="1"><stop stop-color="#DFF6F8"/><stop offset=".46" stop-color="#9DD8E4"/><stop offset="1" stop-color="#62B4CC"/></linearGradient>
+    <linearGradient id="paper" x2="1" y2="1"><stop stop-color="#FEFEF8"/><stop offset="1" stop-color="#EDF7F5"/></linearGradient>
+    <g id="row" fill="#E7F5F3"><ellipse cx="45" rx="8.5" ry="6"/><ellipse cx="68" rx="8.5" ry="6"/><ellipse cx="91" rx="8.5" ry="6"/><ellipse cx="114" rx="8.5" ry="6"/><ellipse cx="137" rx="8.5" ry="6"/><ellipse cx="160" rx="8.5" ry="6"/><ellipse cx="183" rx="8.5" ry="6"/><ellipse cx="206" rx="8.5" ry="6"/><ellipse cx="229" rx="8.5" ry="6"/><ellipse cx="252" rx="8.5" ry="6"/></g>
+  </defs>
+  <g class="paper"><path d="M90 19Q154 13 222 21L218 128H87Z" fill="url(#paper)"/><path d="M112 45H194M112 57H184M112 69H198" stroke="#D0E5E8" stroke-width="3"/></g>
+  <rect x="31" y="93" width="250" height="21" rx="9" fill="#88BFCC"/>
+  <path d="M32 109Q31 99 45 98H270Q284 100 284 115L302 235Q305 252 289 257H23Q8 255 11 236Z" fill="url(#body)"/>
+  <path d="M39 129H275L280 154H33Z" fill="#7FBFCF"/>
+  <path d="M36 158H278L288 236H23Z" fill="#83C5D5"/>
+  <use href="#row" y="163"/><use href="#row" x="6" y="182"/><use href="#row" y="201"/><use href="#row" x="6" y="220"/>
+  <rect x="84" y="237" width="147" height="10" rx="5" fill="#E1F2F2"/>
+  <rect x="119" y="123" width="77" height="9" rx="3" fill="#D8F0F2"/>
+  <circle cx="29" cy="103" r="14" fill="#AACFD6"/><circle cx="284" cy="103" r="14" fill="#AACFD6"/>
+  <style>.paper{animation:paper 5s ease-in-out infinite}@keyframes paper{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}@media(prefers-reduced-motion:reduce){.paper{animation:none}}</style>
+</svg>

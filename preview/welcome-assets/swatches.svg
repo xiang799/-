@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="290" viewBox="0 0 320 290">
+  <defs><g id="leaf"><rect x="103" y="29" width="60" height="235" rx="9"/><rect x="103" y="182" width="60" height="77" rx="4" fill="#F5FAF8"/><path d="M115 199H150M115 209H143" stroke="#C3DBDF" stroke-width="3"/></g></defs>
+  <use href="#leaf" fill="#B7E1E9" transform="rotate(-18 143 248)"/>
+  <use href="#leaf" fill="#B7D0E9" transform="rotate(-6 143 248)"/>
+  <use href="#leaf" fill="#C5C8E7" transform="rotate(6 143 248)"/>
+  <use href="#leaf" fill="#A5DDE2" transform="rotate(18 143 248)"/>
+  <use href="#leaf" fill="#83C9DB" transform="rotate(30 143 248)"/>
+  <use href="#leaf" fill="#61BAD1" transform="rotate(42 143 248)"/>
+  <circle cx="143" cy="248" r="8" fill="#AECFD5"/><circle cx="143" cy="248" r="3" fill="#E8F4F4"/>
+</svg>

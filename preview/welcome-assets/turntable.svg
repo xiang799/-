@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="270" height="270" viewBox="0 0 270 270">
+  <defs>
+    <linearGradient id="body" x2="1" y2="1"><stop stop-color="#DFF6F8"/><stop offset=".46" stop-color="#9DD8E4"/><stop offset="1" stop-color="#62B4CC"/></linearGradient>
+    <linearGradient id="light" x2="0" y2="1"><stop stop-color="#F8FCFB"/><stop offset="1" stop-color="#B9E8ED"/></linearGradient>
+    <linearGradient id="deep" x2="1" y2="1"><stop stop-color="#9DD8E4"/><stop offset="1" stop-color="#389AB9"/></linearGradient>
+  </defs>
+  <path d="M31 32Q31 18 48 18H225Q242 18 242 36L250 166H23Z" fill="url(#body)"/>
+  <path d="M43 34H229L236 151H35Z" fill="url(#light)"/>
+  <path d="M116 15H153V25H116Z" fill="#79B7C6"/>
+  <path d="M23 160Q24 151 37 151H242Q252 151 255 164L263 224Q265 239 247 242H23Q8 240 10 224Z" fill="url(#deep)"/>
+  <path d="M25 155H243L251 204H18Z" fill="#A9E0E8"/>
+  <g transform="translate(120 177) scale(1 .385)">
+    <circle r="81" fill="#6BAABE"/>
+    <circle r="70" fill="none" stroke="#A4D4DD" stroke-width="5"/>
+    <circle r="56" fill="none" stroke="#92CAD7" stroke-width="4"/>
+    <circle r="23" fill="#E9F5F3"/>
+    <g class="spin"><path d="M0-16L5-4" stroke="#BDDDE3" stroke-width="4" stroke-linecap="round"/></g>
+  </g>
+  <path d="M222 165L219 183L180 194" fill="none" stroke="#75A9B6" stroke-width="6" stroke-linecap="round"/>
+  <rect x="99" y="225" width="76" height="24" rx="10" fill="#B9E8ED"/>
+  <rect x="26" y="215" width="45" height="15" rx="5" fill="#99C9D3"/>
+  <rect x="204" y="215" width="37" height="15" rx="5" fill="#99C9D3"/>
+  <style>.spin{animation:spin 8s linear infinite;transform-origin:0 0}@keyframes spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.spin{animation:none}}</style>
+</svg>
