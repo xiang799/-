@@ -136,16 +136,9 @@
       const pending = resources.map(resource => loadScript(resource.src).then(() => {
         update(resource.end, resource.label);
       }));
-      const ui = Promise.all(pending.slice(0, 4)).then(() => {
-        const fallback = document.querySelector('#intro-fallback');
-        fallback.hidden = false;
-        fallback.onclick = () => { complete(); leave(); window.portfolioApp.open('works'); };
-        if (!preview && !still) setTimeout(complete, 1100);
-      });
-      await Promise.all([ui, ...pending]);
+      await Promise.all(pending);
     } catch (error) {
-      if (window.portfolioApp) complete();
-      else fail(error);
+      fail(error);
     }
   }
   window.WorkspaceLoading = {update, ready:complete, fail};

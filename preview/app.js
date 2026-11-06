@@ -128,35 +128,70 @@
     display('从唱片架上，选一首。','DESK SESSIONS / FIVE RECORDS',`<section><p class="panel-intro">把喜欢的唱片放上唱片机。浏览作品时，音乐会继续陪着你。</p><div class="record-grid">${tracks.map((track,j)=>`<button class="record-sleeve ${j===activeTrack?'selected':''}" data-track="${j}" aria-label="播放 ${esc(track.title)}"><img src="${track.cover}" alt="${esc(track.title)}专辑封面"><b>${esc(track.title)}</b><small>${esc(track.artist)}</small></button>`).join('')}</div><div class="record-deck"><div class="record-art ${!audio.paused?'is-playing':''}" id="record-art"><img id="record-label" src="${track.cover}" alt=""></div><div class="record-controls"><h3 id="track-title">${esc(track.title)}</h3><p id="track-artist">${esc(track.artist)}</p><div class="audio-controls"><button class="arrow-button" data-track-step="-1" aria-label="上一首">←</button><button class="audio-play" data-audio-toggle aria-label="${audio.paused?'播放':'暂停'}">${audio.paused?'▶':'Ⅱ'}</button><button class="arrow-button" data-track-step="1" aria-label="下一首">→</button><label class="volume-control">音量<input data-volume type="range" min="0" max="1" step=".01" value="${audio.volume}" aria-label="音乐音量"></label></div><div class="audio-progress"><span id="audio-current">${time(audio.currentTime)}</span><input id="audio-seek" type="range" min="0" max="1000" value="0" aria-label="音乐播放进度"><span id="audio-duration">${time(audio.duration)}</span></div><div class="audio-status" id="audio-status" role="status">${activeTrack<0?'点一张封面，开始播放。':audio.paused?'唱片已暂停。':'正在播放。'}</div></div></div><div class="actions" style="margin-top:20px"><button class="text-link" id="turntable-lid">${window.workspaceScene?.isLidClosed?.()?'打开唱片机箱盖':'合上唱片机箱盖'}</button></div></section>`);
     updateAudioUI();
   }
-  function chooseTrack(i){
-    i=(i+tracks.length)%tracks.length;const changed=i!==activeTrack;activeTrack=i;
-    if(changed){audio.src=tracks[i].src;window.workspaceScene?.putRecord(i);}
-    window.workspaceScene?.setLid(false);
-    const attempt=audio.play();
-    attempt?.catch(error=>{if(error.name!=='AbortError'){notify('音频暂时未能播放，请点击播放重试。');const status=document.querySelector('#audio-status');if(status)status.textContent='请点击播放按钮重试。';}});
-    if(route==='music')showMusic();
+  let audioState='paused',audioError='',playRequest=0;
+  function showAudioError(message){
+    audioState='paused';
+    audioError=message;
     updateAudioUI();
+    notify(message);
   }
-  function toggleAudio(){if(activeTrack<0){chooseTrack(0);return;}if(audio.paused){window.workspaceScene?.setLid(false);audio.play().catch(()=>notify('请重新选择唱片。'));}else audio.pause();}
+  function chooseTrack(index){
+    const i=(index+tracks.length)%tracks.length;
+    const changed=i!==activeTrack;
+    activeTrack=i;
+    const request=++playRequest;
+    audioError='';
+    if(changed||audio.error)audio.src=tracks[i].src;
+    audio.muted=false;
+    if(audio.volume===0)audio.volume=.75;
+    audioState='loading';
+    // Start playback within the visitor's click, before animating the record.
+    const playback=audio.play();
+    if(changed)window.workspaceScene?.putRecord(i);
+    window.workspaceScene?.setLid(false);
+    if(route==='music'&&changed)showMusic();
+    else updateAudioUI();
+    return Promise.resolve(playback).then(()=>{
+      if(request!==playRequest||audio.paused)return false;
+      audioState='playing';
+      updateAudioUI();
+      return true;
+    }).catch(error=>{
+      if(request!==playRequest||error.name==='AbortError')return false;
+      if(!audioError)showAudioError(error.name==='NotAllowedError'?'请点一下播放键开启声音。':'这首歌暂时未能播放，点播放键重试。');
+      return false;
+    });
+  }
+  function toggleAudio(){
+    if(audio.paused||activeTrack<0){chooseTrack(Math.max(0,activeTrack));return;}
+    ++playRequest;
+    audio.pause();
+  }
   function updateAudioUI(){
-    const playing=!audio.paused&&!audio.ended,track=tracks[Math.max(0,activeTrack)];
+    const playing=audioState==='playing'&&!audio.paused&&!audio.ended;
+    const canPause=!audio.paused&&!audio.ended,track=tracks[Math.max(0,activeTrack)];
     document.body.classList.toggle('has-audio',activeTrack>=0);
     window.workspaceScene?.setPlaying(playing);
     const mini=document.querySelector('#mini-player');mini.hidden=activeTrack<0;mini.classList.toggle('is-playing',playing);
-    document.querySelector('#mini-cover').src=track.cover;
+    const cover=document.querySelector('#mini-cover');
+    if(cover.getAttribute('src')!==track.cover)cover.src=track.cover;
     document.querySelector('#mini-title').textContent=track.title;
     document.querySelector('#mini-artist').textContent=track.artist;
-    document.querySelectorAll('[data-audio-toggle]').forEach(b=>{b.textContent=playing?'Ⅱ':'▶';b.setAttribute('aria-label',playing?'暂停音乐':'播放音乐');});
+    document.querySelectorAll('[data-audio-toggle]').forEach(b=>{b.textContent=canPause?'Ⅱ':'▶';b.setAttribute('aria-label',canPause?'暂停音乐':'播放音乐');});
     const art=document.querySelector('#record-art');art?.classList.toggle('is-playing',playing);
     const current=document.querySelector('#audio-current'),duration=document.querySelector('#audio-duration'),seek=document.querySelector('#audio-seek');
     if(current)current.textContent=time(audio.currentTime);if(duration)duration.textContent=time(audio.duration);
     if(seek&&Number.isFinite(audio.duration)&&document.activeElement!==seek)seek.value=String(audio.currentTime/audio.duration*1000);
-    const status=document.querySelector('#audio-status');if(status&&activeTrack>=0)status.textContent=playing?'正在播放。':'唱片已暂停。';
+    const status=document.querySelector('#audio-status');
+    if(status&&activeTrack>=0)status.textContent=audioError||(playing?'正在播放。':audioState==='loading'?'正在载入唱片…':'唱片已暂停。');
   }
-  audio.volume=.45;audio.preload='metadata';
-  ['play','pause','playing','loadedmetadata','durationchange','timeupdate'].forEach(event=>audio.addEventListener(event,updateAudioUI));
+  audio.volume=.75;
+  audio.addEventListener('playing',()=>{audioState='playing';updateAudioUI();});
+  audio.addEventListener('waiting',()=>{if(!audio.paused){audioState='loading';updateAudioUI();}});
+  audio.addEventListener('pause',()=>{if(audio.paused){audioState='paused';updateAudioUI();}});
+  ['loadedmetadata','durationchange','timeupdate'].forEach(event=>audio.addEventListener(event,updateAudioUI));
   audio.addEventListener('ended',()=>chooseTrack((activeTrack+1)%tracks.length));
-  audio.addEventListener('error',()=>{const node=document.querySelector('#audio-status');if(node)node.textContent='这首音乐未能载入，请重试或换一张唱片。';notify('音乐载入失败，请重新选择唱片。');window.workspaceScene?.setPlaying(false);});
+  audio.addEventListener('error',()=>showAudioError('这首音乐未能载入，请重试或换一张唱片。'));
   document.addEventListener('play',event=>{if(event.target.tagName==='VIDEO')audio.pause();},true);
   function showCMF(){
     const entry=cmf[cmfIndex];cmfColor=Math.min(cmfColor,entry.colors.length-1);const [name,color]=entry.colors[cmfColor];
@@ -223,7 +258,7 @@
     if(b.dataset.pageTo!==undefined){page=Number(b.dataset.pageTo);showProject(route.split('/')[1].split('?')[0]);body.querySelector(`[data-page-to="${page}"]`)?.scrollIntoView({block:'nearest',inline:'center'});}
     if(b.dataset.reading!==undefined){reading=b.dataset.reading==='true';showProject(route.split('/')[1].split('?')[0]);}
     if(b.dataset.zoom!==undefined)zoom(Number(b.dataset.zoom));
-    if(b.dataset.track!==undefined){chooseTrack(Number(b.dataset.track));setTimeout(close,reduced.matches?0:90);}
+    if(b.dataset.track!==undefined)chooseTrack(Number(b.dataset.track)).then(playing=>{if(playing&&route==='music')close();});
     if(b.hasAttribute('data-audio-toggle'))toggleAudio();
     if(b.dataset.trackStep!==undefined)chooseTrack(Math.max(0,activeTrack)+Number(b.dataset.trackStep));
     if(b.dataset.cmf!==undefined){cmfIndex=Number(b.dataset.cmf);cmfColor=0;showCMF();}

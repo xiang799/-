@@ -56,7 +56,7 @@ window.createWorkspaceRoom=function(T){
   let resizeScene=()=>{};
   renderer.domElement.addEventListener('webglcontextlost',event=>{
    event.preventDefault();contextLost=true;firstFrame=true;
-   showFallback('3D 工作台正在恢复，你可以先浏览作品。');
+   if(host.dataset.scene==='ready')showFallback('3D 工作台正在恢复，你可以先浏览作品。');
   });
   renderer.domElement.addEventListener('webglcontextrestored',()=>{
    contextLost=false;recovered=true;resizeScene();
@@ -147,11 +147,12 @@ window.createWorkspaceRoom=function(T){
    editor?.update();experience.update(now);
    try{renderer.render(scene,camera);}catch(error){
     renderer.setAnimationLoop(null);
-    showFallback('3D 工作台暂时不可用，你仍可浏览作品和简历。');
-    window.WorkspaceLoading?.ready();console.error(error);return;
+    if(firstFrame && host.dataset.scene!=='fallback')window.WorkspaceLoading?.fail(error);
+    else showFallback('3D 工作台暂时不可用，你仍可浏览作品和简历。');
+    console.error(error);return;
    }
    if(firstFrame){firstFrame=false;showScene();window.WorkspaceLoading?.ready();}
   });
   status.textContent=editing?'摆放编辑模式':'点击桌面上的物件，打开我的设计档案。';
- }catch(error){console.error(error);showFallback('3D 工作台暂时不可用，你仍可浏览作品和简历。');window.WorkspaceLoading?.ready();}
+ }catch(error){console.error(error);window.WorkspaceLoading?.fail(error);}
 })();
