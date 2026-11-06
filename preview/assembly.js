@@ -52,12 +52,15 @@ window.createWorkspaceRoom=function(T){
   const mobile=matchMedia('(pointer: coarse)').matches || innerWidth<=600;
   const renderer=new T.WebGLRenderer({alpha:false,antialias:!mobile,powerPreference:'default'});
   renderer.setClearColor('#ffffff');
-  let contextLost=false, firstFrame=true, needsFrame=false;
+  let contextLost=false, recovered=false, firstFrame=true, needsFrame=false;
+  let resizeScene=()=>{};
   renderer.domElement.addEventListener('webglcontextlost',event=>{
    event.preventDefault();contextLost=true;firstFrame=true;
    showFallback('3D 工作台正在恢复，你可以先浏览作品。');
   });
-  renderer.domElement.addEventListener('webglcontextrestored',()=>{contextLost=false;});
+  renderer.domElement.addEventListener('webglcontextrestored',()=>{
+   contextLost=false;recovered=true;resizeScene();
+  });
   renderer.shadowMap.enabled=false;renderer.shadowMap.type=T.PCFSoftShadowMap;
   host.prepend(renderer.domElement);
   const scene=new T.Scene(),camera=new T.OrthographicCamera(-175,175,140,-140,.1,1200);
@@ -101,15 +104,16 @@ window.createWorkspaceRoom=function(T){
   let selected=0,aspect=1,visibleRadius=views[0].r;
   const target=new T.Vector3(...views[0].t),next=new T.Vector3(),nextTarget=new T.Vector3();
   camera.position.set(...views[0].p);
-  function resize(){
+  resizeScene=()=>{
    const width=Math.max(1,host.clientWidth),height=Math.max(1,host.clientHeight);
    aspect=width/height;
-   const pixelBudget=mobile?900000:2600000;
-   renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1:1.5,Math.sqrt(pixelBudget/(width*height))));
+   const pixelBudget=mobile?(recovered?1000000:1600000):2600000;
+   const densityLimit=mobile?(recovered?1.5:2.25):1.5;
+   renderer.setPixelRatio(Math.min(devicePixelRatio,densityLimit,Math.sqrt(pixelBudget/(width*height))));
    renderer.setSize(width,height,false);
    needsFrame=true;
-  }
-  resize();new ResizeObserver(resize).observe(host);
+  };
+  resizeScene();new ResizeObserver(resizeScene).observe(host);
   const buttons=[...document.querySelectorAll('[data-view]')];
   buttons.forEach(b=>b.onclick=()=>{selected=Number(b.dataset.view);buttons.forEach(x=>x.setAttribute('aria-pressed',String(b===x)));});
   let on=true;
