@@ -18,10 +18,14 @@
   const time=seconds=>Number.isFinite(seconds)?`${Math.floor(seconds/60)}:${String(Math.floor(seconds%60)).padStart(2,'0')}`:'0:00';
   let route='',returnRoute='works',page=0,reading=false,activeTrack=-1,lastOpener=null;
   let currentCategory='all',carouselIndex=0,cmfIndex=0,cmfColor=0,noteColor='#d7e9f0';
-  let notes=[],noteStore='local',draft={message:'',name:''},closing=0,toastTimer=0;
+  let notes=[],noteStatus='loading',noteReadVersion=0,draft={message:'',name:''},closing=0,toastTimer=0;
   const selections={};
   const noteColors=['#d7e9f0','#d9e9d6','#e7dff1','#f1e9c9'];
-  try { notes=JSON.parse(localStorage.getItem('cx-desk-notes-v3')||'[]').filter(n=>typeof n.message==='string').slice(0,40); }catch{}
+  const guestbookUrl='https://chen-xiang-guestbook.pages.dev/messages';
+  const noteColorKeys=['blue','green','pink','yellow'];
+  function fromGuestbookItem(item){
+    return {id:item.id,message:item.body,name:item.nickname,color:noteColors[noteColorKeys.indexOf(item.color)]||noteColors[0],created_at:item.created_at};
+  }
   function notify(message){const node=document.querySelector('#toast');node.textContent=message;node.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>node.classList.remove('show'),2600);}
   function open(next){if(location.hash.slice(1)===next)render(next);else location.hash=next;}
   function close(){
@@ -60,7 +64,7 @@
     else if(key==='cmf')showCMF();
     else if(key==='process')showProcess();
     else if(key==='compose')showCompose();
-    else if(key==='notes')showNotes();
+    else if(key==='notes'){showNotes();fetchNotes();}
     else{route='works';showFolders();}
   }
   function showFolders(){
@@ -163,28 +167,42 @@
     display('翻一翻设计过程','SKETCHBOOK / FROM QUESTIONS TO FORMS',`<section><p class="panel-intro">调研、用户画像、造型与方案推演。这里引用项目中的原始过程资料。</p><div class="process-index">${ids.map(id=>{const p=project(id),index=id==='dayibu'?2:id==='tea'?4:1;return `<button class="process-card" data-process="${id}" data-page-start="${index}">${assetImage(shot(id,index),'loading="lazy"',true)}<span><b>${p.title}</b><small>${count(id)} 张项目图与过程页面 ↗</small></span></button>`;}).join('')}</div></section>`);
   }
   async function fetchNotes(){
-    try{const response=await fetch('/api/notes',{cache:'no-store'});if(!response.ok)throw Error();const data=await response.json();if(!Array.isArray(data.notes))throw Error();notes=data.notes;noteStore='shared';}
-    catch{noteStore='local';}
+    const version=++noteReadVersion;
+    try{
+      const response=await fetch(guestbookUrl,{cache:'no-store',signal:AbortSignal.timeout(12000)});
+      if(!response.ok)throw Error();
+      const data=await response.json();
+      if(!Array.isArray(data.items))throw Error();
+      if(version!==noteReadVersion)return;
+      notes=data.items.map(fromGuestbookItem);
+      noteStatus='ready';
+    }catch{
+      if(version!==noteReadVersion)return;
+      noteStatus='unavailable';
+    }
     window.workspaceScene?.setNotes(notes);
     if(route==='notes')showNotes();
   }
   function notesMarkup(){return notes.length?notes.map((note,i)=>`<article class="guest-note" style="--note:${noteColors.includes(note.color)?note.color:noteColors[0]};--tilt:${[-3,2,-1,3,0][i%5]}deg">${esc(note.message)}<small>— ${esc(note.name||'路过的朋友')}<br>${note.created_at?esc(new Date(note.created_at).toLocaleDateString('zh-CN')):''}</small></article>`).join(''):'<p class="notes-empty">毛毡板上还没有留言。<br>去打字机上，留下第一张纸条吧。</p>';}
-  function showNotes(){display('留在工作台上的话','THE FELT BOARD / LITTLE HELLOS',`<section><div class="subnav">${btn('compose','写一张留言 ↗','primary-action')}<span class="count-label">${notes.length} NOTES</span></div><p class="panel-intro">${noteStore==='shared'?'这里是访问者留下的纸条。':noteStore==='local'?'预览版的留言保存在当前浏览器中。':'正在打开留言板…'}</p><div class="guestboard">${notesMarkup()}</div></section>`);}
-  function showCompose(){display('打几行字，留在这里。','TYPE A LITTLE NOTE',`<section class="typewriter-layout"><form class="typing-form typing-machine" id="note-form"><div class="typing-paper"><small>A NOTE FROM YOUR VISIT</small><label><span class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden">留言内容</span><textarea name="message" required maxlength="120" placeholder="今天想留下什么？">${esc(draft.message)}</textarea></label><div class="typing-meta"><label>署名（选填）<input name="nickname" maxlength="20" value="${esc(draft.name)}" placeholder="路过的朋友"></label><span class="typing-count" id="typing-count">${draft.message.length} / 120</span></div><div class="note-colors" aria-label="纸张颜色">${noteColors.map((color,i)=>`<button type="button" data-note-color="${color}" style="--color:${color}" aria-label="纸张颜色 ${['蓝','绿','紫','黄'][i]}" aria-pressed="${color===noteColor}"></button>`).join('')}</div></div><div class="typing-keys" aria-hidden="true">${[...'HELLOCHENXIANG'].map(char=>`<i>${char}</i>`).join('')}</div><div class="actions" style="justify-content:center"><button class="primary-action" type="submit" id="note-submit">贴到毛毡板 ↗</button></div><p class="form-status" id="note-form-status" role="status"></p></form><aside class="typing-aside"><span class="eyebrow">MAKE YOURSELF AT HOME</span><h3>一张小纸条，<br>一次相遇的记录。</h3><p>写下灵感、感受，或者只是打个招呼。提交后，纸条会贴到工作台上方的毛毡板。</p><p>${noteStore==='shared'?'留言会在这个网站的留言板中公开展示，请勿填写私人敏感信息。':'预览版的留言保存在当前浏览器中。'}</p>${btn('notes','看看大家的留言 ↗')}</aside></section>`);}
+  function showNotes(){display('留在工作台上的话','THE FELT BOARD / LITTLE HELLOS',`<section><div class="subnav">${btn('compose','写一张留言 ↗','primary-action')}<span class="count-label">${notes.length} NOTES</span></div><p class="panel-intro">${noteStatus==='ready'?'这里是访问者留下的纸条。':noteStatus==='unavailable'?'暂时连不上留言板。关闭后重新打开即可重试。':'正在打开留言板…'}</p><div class="guestboard">${noteStatus==='ready'||notes.length?notesMarkup():''}</div></section>`);}
+  function showCompose(){display('打几行字，留在这里。','TYPE A LITTLE NOTE',`<section class="typewriter-layout"><form class="typing-form typing-machine" id="note-form"><div class="typing-paper"><small>A NOTE FROM YOUR VISIT</small><label><span class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden">留言内容</span><textarea name="message" required maxlength="120" placeholder="今天想留下什么？">${esc(draft.message)}</textarea></label><div class="typing-meta"><label>署名（选填）<input name="nickname" maxlength="20" value="${esc(draft.name)}" placeholder="路过的朋友"></label><span class="typing-count" id="typing-count">${draft.message.length} / 120</span></div><div class="note-colors" aria-label="纸张颜色">${noteColors.map((color,i)=>`<button type="button" data-note-color="${color}" style="--color:${color}" aria-label="纸张颜色 ${['蓝','绿','紫','黄'][i]}" aria-pressed="${color===noteColor}"></button>`).join('')}</div></div><div class="typing-keys" aria-hidden="true">${[...'HELLOCHENXIANG'].map(char=>`<i>${char}</i>`).join('')}</div><div class="actions" style="justify-content:center"><button class="primary-action" type="submit" id="note-submit">贴到毛毡板 ↗</button></div><p class="form-status" id="note-form-status" role="status"></p></form><aside class="typing-aside"><span class="eyebrow">MAKE YOURSELF AT HOME</span><h3>一张小纸条，<br>一次相遇的记录。</h3><p>写下灵感、感受，或者只是打个招呼。提交后，纸条会贴到工作台上方的毛毡板。</p><p>留言会在这个网站的留言板中公开展示。</p>${btn('notes','看看大家的留言 ↗')}</aside></section>`);}
   async function submitNote(form){
     const message=form.elements.message.value.trim(),name=form.elements.nickname.value.trim()||'路过的朋友';
     const status=document.querySelector('#note-form-status'),button=document.querySelector('#note-submit');
     if(!message){status.textContent='先写下一点内容吧。';return;}
     button.disabled=true;button.textContent='正在送出纸条…';status.textContent='';
     try{
-      let note;
-      if(noteStore==='shared'){
-        const response=await fetch('/api/notes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message,name,color:noteColor})});
-        const data=await response.json();if(!response.ok)throw Error(data.error||'暂时未能保存，请重试。');note=data.note;
-      }else{
-        note={id:crypto.randomUUID?.()||String(Date.now()),message,name,color:noteColor,created_at:new Date().toISOString()};
-        const updated=[note,...notes].slice(0,40);localStorage.setItem('cx-desk-notes-v3',JSON.stringify(updated));
-      }
+      const response=await fetch(guestbookUrl,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({body:message,nickname:name,color:noteColorKeys[noteColors.indexOf(noteColor)]}),
+        signal:AbortSignal.timeout(12000)
+      });
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok||!data.item)throw Error(data.error||'暂时未能发布留言，请重试。');
+      const note=fromGuestbookItem(data.item);
+      ++noteReadVersion;
+      noteStatus='ready';
+      if(!form.isConnected){notes=[note,...notes].slice(0,40);window.workspaceScene?.setNotes(notes);return;}
       notes=[note,...notes].slice(0,40);draft={message:'',name:''};window.workspaceScene?.setNotes(notes);window.workspaceScene?.focus('board');
       const rect=form.querySelector('.typing-paper').getBoundingClientRect();
       const stage=document.createElement('dialog');stage.className='paper-stage';stage.setAttribute('aria-label','纸条正在贴到毛毡板');
@@ -192,7 +210,7 @@
       const destination={x:innerWidth*.52,y:innerHeight*.44};
       requestAnimationFrame(()=>requestAnimationFrame(()=>{paper.style.transform=`translate(${destination.x-(rect.left+rect.width/2)}px,${destination.y-(rect.top+80)}px) rotate(-8deg) scale(.28)`;paper.style.opacity='.2';}));
       setTimeout(()=>{stage.close();stage.remove();close();notify('纸条已经贴到毛毡板上了。');},reduced.matches?100:850);
-    }catch(error){status.textContent=error.message||'保存失败，文字仍保留在输入框。';status.classList.add('form-error');button.disabled=false;button.textContent='重新提交 ↗';}
+    }catch(error){status.textContent=error instanceof TypeError||error.name==='TimeoutError'?'暂时连不上留言板，文字仍保留在输入框。':error.message||'保存失败，文字仍保留在输入框。';status.classList.add('form-error');button.disabled=false;button.textContent='重新提交 ↗';}
   }
   document.addEventListener('click',event=>{
     const b=event.target.closest('button');if(!b)return;
@@ -236,4 +254,5 @@
   window.addEventListener('workspace:entered',()=>{if(location.hash.length>1)render(location.hash.slice(1));});
   window.portfolioApp={open,close,chooseTrack,notify,notes:()=>notes};
   window.addEventListener('workspace:scene-ready',()=>window.workspaceScene?.setNotes(notes));
+  window.addEventListener('workspace:entered',()=>{if(route!=='notes')fetchNotes();});
 })();
