@@ -37,14 +37,27 @@ window.createWorkspaceRoom=function(T){
 };
 (async()=>{
  const T=window.THREE,host=document.querySelector('#view'),status=document.querySelector('#status');
+ const fallback=document.querySelector('#scene-fallback');
+ const fallbackMessage=document.querySelector('#scene-fallback-message');
+ function showFallback(message){
+  host.dataset.scene='fallback';fallback.hidden=false;fallbackMessage.textContent=message;
+  document.querySelectorAll('[data-view],#lamp,#toggle-labels').forEach(button=>button.disabled=true);
+ }
+ function showScene(){
+  host.dataset.scene='ready';fallback.hidden=true;
+  document.querySelectorAll('[data-view],#lamp,#toggle-labels').forEach(button=>button.disabled=false);
+ }
  try{
   window.WorkspaceLoading?.update(82,'正在布置桌面物件…');
-  let texturesIdle=true,resolveTextures;
-  T.DefaultLoadingManager.onStart=()=>{texturesIdle=false;};
-  T.DefaultLoadingManager.onLoad=()=>{texturesIdle=true;resolveTextures?.();};
-  T.DefaultLoadingManager.onError=()=>window.WorkspaceLoading?.fail(new Error('唱片封面未能载入'));
-  const renderer=new T.WebGLRenderer({alpha:false,antialias:true});
-  renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setClearColor('#ffffff');
+  const mobile=matchMedia('(pointer: coarse)').matches || innerWidth<=600;
+  const renderer=new T.WebGLRenderer({alpha:false,antialias:!mobile,powerPreference:'default'});
+  renderer.setClearColor('#ffffff');
+  let contextLost=false, firstFrame=true, needsFrame=false;
+  renderer.domElement.addEventListener('webglcontextlost',event=>{
+   event.preventDefault();contextLost=true;firstFrame=true;
+   showFallback('3D 工作台正在恢复，你可以先浏览作品。');
+  });
+  renderer.domElement.addEventListener('webglcontextrestored',()=>{contextLost=false;});
   renderer.shadowMap.enabled=false;renderer.shadowMap.type=T.PCFSoftShadowMap;
   host.prepend(renderer.domElement);
   const scene=new T.Scene(),camera=new T.OrthographicCamera(-175,175,140,-140,.1,1200);
@@ -60,7 +73,7 @@ window.createWorkspaceRoom=function(T){
   const fan=window.createColorFan(T);fan.root.scale.setScalar(.48);fan.root.position.set(13,75.75,21);fan.root.rotation.x=-Math.PI/2;fan.root.rotation.z=.12;
   fan.strips.forEach((s,i)=>s.rotation.z=i===12?.09:-(12-i)*.124);scene.add(fan.root);
   const turntable=window.createSuitcaseTurntable(T);turntable.root.position.set(-109,56,4);turntable.root.scale.setScalar(.91);turntable.root.rotation.y=.16;scene.add(turntable.root);
-  const decalsReady=window.applyTurntableDecals(T,turntable.lid).catch(error=>window.WorkspaceLoading?.fail(error));
+  window.applyTurntableDecals(T,turntable.lid).catch(error=>console.warn('Sticker decoration unavailable',error));
   const display=window.createRecordDisplay(T,{position:[-102,103,-48],records:window.turntablePlaylist});
   display.scale.setScalar(.94);scene.add(display);
   const badge=await window.createDesignerBadge(T);badge.position.set(-39,112,-49.5);badge.scale.setScalar(1.35);badge.rotation.z=-.09;scene.add(badge);
@@ -88,11 +101,20 @@ window.createWorkspaceRoom=function(T){
   let selected=0,aspect=1,visibleRadius=views[0].r;
   const target=new T.Vector3(...views[0].t),next=new T.Vector3(),nextTarget=new T.Vector3();
   camera.position.set(...views[0].p);
-  new ResizeObserver(()=>{aspect=host.clientWidth/Math.max(1,host.clientHeight);renderer.setSize(host.clientWidth,host.clientHeight,false);}).observe(host);
+  function resize(){
+   const width=Math.max(1,host.clientWidth),height=Math.max(1,host.clientHeight);
+   aspect=width/height;
+   const pixelBudget=mobile?900000:2600000;
+   renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1:1.5,Math.sqrt(pixelBudget/(width*height))));
+   renderer.setSize(width,height,false);
+   needsFrame=true;
+  }
+  resize();new ResizeObserver(resize).observe(host);
   const buttons=[...document.querySelectorAll('[data-view]')];
   buttons.forEach(b=>b.onclick=()=>{selected=Number(b.dataset.view);buttons.forEach(x=>x.setAttribute('aria-pressed',String(b===x)));});
   let on=true;
-  document.querySelector('#lamp').onclick=e=>{on=!on;studio.beam.visible=studio.pool.visible=on;studio.bulbMat.emissiveIntensity=on?1.8:0;studio.litLens.emissiveIntensity=on?2:0;e.currentTarget.textContent=on?'关台灯':'开台灯';e.currentTarget.setAttribute('aria-pressed',String(on));};
+  const beamIntensity=studio.beam.intensity;
+  document.querySelector('#lamp').onclick=e=>{on=!on;studio.beam.intensity=on?beamIntensity:0;studio.pool.visible=on;studio.bulbMat.emissiveIntensity=on?1.8:0;studio.litLens.emissiveIntensity=on?2:0;e.currentTarget.textContent=on?'关台灯':'开台灯';e.currentTarget.setAttribute('aria-pressed',String(on));};
   const editing=new URLSearchParams(location.search).get('edit')==='1';
   const objects={desk:studio.desk,chair:studio.chair,computer,typewriter,basket,fan:fan.root,turntable:turntable.root,records:display,badge,lamp:studio.lamp,toolbox:studio.tray,print:studio.print,plant,stand};
   const editor=window.createWorkspaceEditor(T,{
@@ -101,14 +123,16 @@ window.createWorkspaceRoom=function(T){
   });
   const experience=window.createDeskExperience(T,{scene,camera,canvas:renderer.domElement,studio,computer,typewriter,basket,fan,turntable,display,badge,objects,editing});
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-  await decalsReady;
-  if(!texturesIdle)await new Promise(resolve=>{resolveTextures=resolve;});
   window.WorkspaceLoading?.update(97,'正在点亮工作台…');
-  let firstFrame=true;
+  let lastFrame=0;
+  const focusOffset=new T.Vector3(190,145,260);
   renderer.setAnimationLoop(now=>{
+   if(contextLost||document.hidden||(mobile&&!firstFrame&&!needsFrame&&(now-lastFrame<32||document.body.classList.contains('panel-open'))))return;
+   lastFrame=now;
+   needsFrame=false;
    const v=views[selected],k=reduced.matches?1:.10;
    const focus=experience.focused();
-   if(focus){nextTarget.copy(focus.center);next.copy(focus.center).add(new T.Vector3(190,145,260));}
+   if(focus){nextTarget.copy(focus.center);next.copy(focus.center).add(focusOffset);}
    else{next.set(...v.p);nextTarget.set(...v.t);if(aspect<1.4&&selected===0){nextTarget.x+=8;nextTarget.y+=2;}}
    camera.position.lerp(next,k);target.lerp(nextTarget,k);
    camera.lookAt(target);const radius=focus?Math.max(35,focus.size.y*.8,focus.size.x/(aspect*1.4),focus.size.z*.62):v.r;
@@ -116,9 +140,14 @@ window.createWorkspaceRoom=function(T){
    const r=Math.max(radius,radius*fitScale/aspect);
    visibleRadius+=(r-visibleRadius)*k;
    camera.left=-visibleRadius*aspect;camera.right=visibleRadius*aspect;camera.top=visibleRadius;camera.bottom=-visibleRadius;camera.updateProjectionMatrix();
-   editor.update();experience.update(now);renderer.render(scene,camera);
-   if(firstFrame){firstFrame=false;window.WorkspaceLoading?.ready();}
+   editor?.update();experience.update(now);
+   try{renderer.render(scene,camera);}catch(error){
+    renderer.setAnimationLoop(null);
+    showFallback('3D 工作台暂时不可用，你仍可浏览作品和简历。');
+    window.WorkspaceLoading?.ready();console.error(error);return;
+   }
+   if(firstFrame){firstFrame=false;showScene();window.WorkspaceLoading?.ready();}
   });
   status.textContent=editing?'摆放编辑模式':'点击桌面上的物件，打开我的设计档案。';
- }catch(error){console.error(error);status.textContent='三维场景暂时不可用，可通过上方导航浏览作品。';window.WorkspaceLoading?.fail(error);}
+ }catch(error){console.error(error);showFallback('3D 工作台暂时不可用，你仍可浏览作品和简历。');window.WorkspaceLoading?.ready();}
 })();

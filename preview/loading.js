@@ -13,7 +13,8 @@
   const preview = params.get('intro') === 'preview';
   // Layout reference mode is deliberately explicit, and never used by the real loader.
   const still = params.get('intro') === 'still';
-  const minimumDuration = reduced.matches ? 650 : 4200;
+  const minimumDuration = reduced.matches ? 250 : 900;
+  const version = document.currentScript.src.split('?')[1];
   let started = performance.now();
   let target = 0, shown = 0, frame = 0, lastTick = started;
   let ready = false, failed = false, leaving = false, leaveTimer = 0, setupTimer = 0;
@@ -102,14 +103,14 @@
   function tick(now) {
     const dt = Math.min(64, now - lastTick); lastTick = now;
     // Ease towards observed progress; there is no timer-generated fake percentage.
-    shown += (target - shown) * (1 - Math.exp(-dt / 230));
+    shown += (target - shown) * (1 - Math.exp(-dt / 75));
     if (Math.abs(target - shown) < .08) shown = target;
     const display = still ? 68 : Math.floor(shown);
     percentage.textContent = `${display}%`;
     fill.style.transform = `scaleX(${display / 100})`;
     bar.setAttribute('aria-valuenow', String(display));
     if (ready && shown === 100 && !preview && !still && !failed && !leaving && !leaveTimer) {
-      leaveTimer = setTimeout(leave, Math.max(0, minimumDuration - (now - started)) + 400);
+      leaveTimer = setTimeout(leave, Math.max(0, minimumDuration - (now - started)));
     }
     if (!intro.hidden) frame = requestAnimationFrame(tick);
   }
@@ -117,7 +118,7 @@
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
       const timeout = setTimeout(() => reject(new Error(`资源加载超时：${src}`)), 30000);
-      script.src = src;
+      script.src = version ? `${src}?${version}` : src;
       script.async = false;
       script.onload = () => {clearTimeout(timeout);resolve();};
       script.onerror = () => {clearTimeout(timeout);reject(new Error(`资源加载失败：${src}`));};
@@ -130,14 +131,22 @@
     try {
       // Give the welcome artwork a first paint before constructing the 3D scene.
       await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      const images = [...intro.querySelectorAll('img')];
-      await Promise.all(images.map(img => img.decode()));
       update(6, '正在布置工作台…');
-      for (const resource of resources) {
-        await loadScript(resource.src);
+      // Async=false preserves script execution order while downloads overlap.
+      const pending = resources.map(resource => loadScript(resource.src).then(() => {
         update(resource.end, resource.label);
-      }
-    } catch (error) { fail(error); }
+      }));
+      const ui = Promise.all(pending.slice(0, 4)).then(() => {
+        const fallback = document.querySelector('#intro-fallback');
+        fallback.hidden = false;
+        fallback.onclick = () => { complete(); leave(); window.portfolioApp.open('works'); };
+        if (!preview && !still) setTimeout(complete, 1100);
+      });
+      await Promise.all([ui, ...pending]);
+    } catch (error) {
+      if (window.portfolioApp) complete();
+      else fail(error);
+    }
   }
   window.WorkspaceLoading = {update, ready:complete, fail};
   enter.onclick = leave;

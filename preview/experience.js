@@ -76,7 +76,7 @@ window.createDeskExperience=function(T,{scene,camera,canvas,studio,computer,type
   turntable.arm.rotation.y+=((playing?-.85:-.19)-turntable.arm.rotation.y)*k;
   turntable.lift.rotation.x+=((playing?0:-.035)-turntable.lift.rotation.x)*k;
   if(playing&&!reduced.matches)turntable.platter.rotation.y+=dt*3.49;
-  if(!editing)for(const [key,obj] of Object.entries(targets)){const s=baseScales[key],factor=key===hovered?1.014:1;obj.scale.lerp(s.clone().multiplyScalar(factor),k);}
+  if(!editing)for(const [key,obj] of Object.entries(targets)){const s=baseScales[key],factor=key===hovered&&key!=='lamp'?1.014:1;obj.scale.lerp(s.clone().multiplyScalar(factor),k);}
   if(flight){const progress=Math.min(1,(now-flight.at)/1150),e=progress*progress*(3-2*progress);flight.object.position.lerpVectors(flight.start,flight.end,e);flight.object.position.y+=Math.sin(progress*Math.PI)*24;flight.object.rotation.x=(1-e)*Math.PI/2;flight.object.scale.setScalar(T.MathUtils.lerp(flight.startScale,flight.endScale,e));if(progress===1){recordLabel.material.map=flight.texture;recordLabel.material.needsUpdate=true;scene.remove(flight.object);flight.object.traverse(o=>{o.geometry?.dispose();o.material?.dispose();});flight=null;}}
   if(!labels.hidden)for(const b of labels.children){const p=screenPoint(b.dataset.anchor);const r=canvas.getBoundingClientRect();b.style.left=p.x-r.left+'px';b.style.top=p.y-r.top+'px';}
  }
