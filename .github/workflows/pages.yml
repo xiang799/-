@@ -21,6 +21,14 @@ jobs:
         run: |
           mkdir _site
           cp -a preview assets content vendor work about cmf contact guestbook process projects templates index.html script.js studio.js styles.css .nojekyll _site/
+      - name: Prepare media encoder
+        run: |
+          if ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y ffmpeg
+          fi
+      - name: Optimize delivery assets
+        run: python3 tools/optimize-preview.py _site/preview
       - uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
           path: _site
@@ -41,3 +49,4 @@ jobs:
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5
         with:
           timeout: 1800000
+

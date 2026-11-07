@@ -13,7 +13,12 @@
   const category=id=>categories.find(c=>c.id===id);
   const project=id=>projects.find(p=>p.id===id);
   const shot=(id,index=0)=>images[id]?.[index]||images[id]?.[0];
-  const assetImage=(item,attrs='',preview=false)=>`<img src="${esc(preview?(item.thumbnail||item.src):item.src)}" decoding="async" alt="${esc(item.label)}" width="${item.width||1600}" height="${item.height||1000}" ${attrs}>`;
+  function assetImage(item,attrs='',preview=false){
+    const reading=preview==='reading'&&item.reading;
+    const src=reading||((preview===true&&item.thumbnail)||item.src);
+    const responsive=reading?`srcset="${esc(item.reading)} ${item.readingWidth}w, ${esc(item.src)} ${item.width}w" sizes="(max-width: 600px) calc(100vw - 48px), (max-width: 1200px) calc(100vw - 96px), 1100px"`:'';
+    return `<img src="${esc(src)}" ${responsive} decoding="async" alt="${esc(item.label)}" width="${item.width||1600}" height="${item.height||1000}" ${attrs}>`;
+  }
   const count=id=>(images[id]||[]).length;
   const time=seconds=>Number.isFinite(seconds)?`${Math.floor(seconds/60)}:${String(Math.floor(seconds%60)).padStart(2,'0')}`:'0:00';
   let route='',returnRoute='works',page=0,reading=false,activeTrack=-1,lastOpener=null;
@@ -108,8 +113,7 @@
     const p=project(id);if(!p){showFolders();return;}
     const list=images[id]||[];page=Math.min(page,Math.max(0,list.length-1));
     const attachments=`<div class="project-attachments">${p.pdf?`<a class="secondary-action" href="${p.pdf}" target="_blank" rel="noopener">打开完整 PDF ↗</a><a class="secondary-action" href="${p.pdf}" download>下载原始文档 ↓</a>`:''}${p.external?`<a class="secondary-action" href="${esc(p.external)}" target="_blank" rel="noopener">查看 LoRA 模型主页 ↗</a>`:''}</div>${p.video?`<video class="project-video" controls preload="none" src="${p.video}" aria-label="${esc(p.title)}展示视频"></video>`:''}`;
-    const mobilePreview=matchMedia('(max-width: 600px)').matches;
-    const gallery=reading?`<div class="project-reading">${list.map((item,i)=>`<figure><button data-zoom="${i}" style="padding:0;width:100%" aria-label="放大第 ${i+1} 张">${assetImage(item,'loading="lazy"',mobilePreview)}</button><figcaption>${String(i+1).padStart(2,'0')} / ${list.length} · ${esc(item.label)}</figcaption></figure>`).join('')}</div>`:`<figure class="project-sheet"><button data-zoom="${page}" aria-label="放大当前项目展板">${assetImage(list[page],'fetchpriority="high"',mobilePreview)}</button><span class="zoom-hint">点击放大 ↗</span></figure><div class="sheet-controls"><button class="arrow-button" data-page="-1" aria-label="上一张项目图" ${page===0?'disabled':''}>←</button><span aria-live="polite">${page+1} / ${list.length} · ${esc(list[page].label)}</span><button class="arrow-button" data-page="1" aria-label="下一张项目图" ${page===list.length-1?'disabled':''}>→</button></div><div class="thumbnails">${list.map((item,i)=>`<button data-page-to="${i}" aria-current="${i===page}" aria-label="查看第 ${i+1} 张"><img src="${item.thumbnail||item.src}" alt="" loading="lazy"></button>`).join('')}</div>`;
+    const gallery=reading?`<div class="project-reading">${list.map((item,i)=>`<figure><button data-zoom="${i}" style="padding:0;width:100%" aria-label="放大第 ${i+1} 张">${assetImage(item,'loading="lazy"','reading')}</button><figcaption>${String(i+1).padStart(2,'0')} / ${list.length} · ${esc(item.label)}</figcaption></figure>`).join('')}</div>`:`<figure class="project-sheet"><button data-zoom="${page}" aria-label="放大当前项目展板">${assetImage(list[page],'fetchpriority="high"','reading')}</button><span class="zoom-hint">点击放大 ↗</span></figure><div class="sheet-controls"><button class="arrow-button" data-page="-1" aria-label="上一张项目图" ${page===0?'disabled':''}>←</button><span aria-live="polite">${page+1} / ${list.length} · ${esc(list[page].label)}</span><button class="arrow-button" data-page="1" aria-label="下一张项目图" ${page===list.length-1?'disabled':''}>→</button></div><div class="thumbnails">${list.map((item,i)=>`<button data-page-to="${i}" aria-current="${i===page}" aria-label="查看第 ${i+1} 张"><img src="${item.thumbnail||item.src}" alt="" loading="lazy"></button>`).join('')}</div>`;
     display(p.title,p.subtitle+' / '+p.categories.map(id=>category(id).english).join(' · '),`<section><div class="project-top">${btn(returnRoute,'← 返回作品展厅')}<div class="project-view"><button data-reading="false" class="${reading?'':'active'}">逐页浏览</button><button data-reading="true" class="${reading?'active':''}">连续阅读</button></div></div><p class="project-summary">${esc(p.summary)}<br><span class="count-label">${list.length} PAGES ${p.video?' / PROJECT FILM':''}</span></p>${gallery}${attachments}</section>`);
   }
   function zoom(index){
@@ -291,3 +295,4 @@
   window.addEventListener('workspace:scene-ready',()=>window.workspaceScene?.setNotes(notes));
   window.addEventListener('workspace:entered',()=>{if(route!=='notes')fetchNotes();});
 })();
+
