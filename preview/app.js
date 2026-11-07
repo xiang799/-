@@ -77,7 +77,7 @@
     display('打开我的设计档案','WORK ARCHIVE / 01—05',`<section><p class="panel-intro">五个方向，一些从问题走到方案的记录。悬停文件夹，作品名称会浮出来。</p><div class="folders-display">${categories.map((c,i)=>{
       const list=projects.filter(p=>p.categories.includes(c.id));
       return `<article class="archive-folder" style="--folder:${c.color};--order:${i};--tilt:${[-4,3,-2,3,-4][i]}deg"><div class="archive-folder__back"></div><div class="archive-folder__paper"></div><div class="folder-projects">${list.map((p,j)=>`<button data-project="${p.id}" style="--slip:${j}">${esc(p.title)} ↗</button>`).join('')}</div><button class="archive-folder__front" data-route="works/${c.id}" aria-label="打开${c.title}文件夹"><span class="folder-tag">${c.english}</span><b>${c.title}</b><small>${String(list.length).padStart(2,'0')} PROJECTS / ↗</small></button></article>`;
-    }).join('')}</div><div class="archive-bottom"><span>15 个项目 · ${Object.values(images).reduce((sum,list)=>sum+list.length,0)} 张展板与文档页面</span>${btn('works/all','按顺序浏览全部作品 ↗')}</div></section>`);
+    }).join('')}</div><div class="archive-bottom"><span>${projects.length} 个项目 · ${Object.values(images).reduce((sum,list)=>sum+list.length,0)} 张展板与文档页面</span>${btn('works/all','按顺序浏览全部作品 ↗')}</div></section>`);
   }
   function showCategory(id){
     const list=id==='all'?projects:id==='featured'?projects.filter(p=>p.featured):projects.filter(p=>p.categories.includes(id));
@@ -202,8 +202,8 @@
     display('颜色，材料，与触感','CMF / COLOUR FIELD NOTES',`<section><div class="filter-tabs">${cmf.map((item,i)=>`<button data-cmf="${i}" class="${i===cmfIndex?'active':''}">${item.title}</button>`).join('')}</div><div class="cmf-layout" style="margin-top:25px"><div>${assetImage(shot(entry.id,entry.image),'class="cmf-image"',matchMedia('(max-width: 600px)').matches)}<div class="cmf-cards">${entry.colors.map(([label,hex],i)=>`<button class="cmf-swatch ${i===cmfColor?'selected':''}" data-cmf-color="${i}" style="--color:${hex};--tilt:${[-3,2,-1,3][i]}deg"><i></i><span>${label}<small>${hex.toUpperCase()}</small></span></button>`).join('')}</div></div><div><span class="eyebrow">${project(entry.id).title} / MATERIAL STUDY</span><h3 class="cmf-material">${entry.material}</h3><p class="cmf-note">色卡用于呈现展板中的色彩方向。屏幕色值为示意取色，不作为实体印刷标准。</p><div class="cmf-selected" style="--color:${color}"><i></i><p>${name}<br><button class="text-link" data-copy="${color}">复制 ${color.toUpperCase()}</button></p></div>${btn('project/'+entry.id,'查看相关项目 ↗','secondary-action')}</div></div></section>`);
   }
   function showProcess(){
-    const ids=['dayibu','tea','robot','train','hike','research'];
-    display('翻一翻设计过程','SKETCHBOOK / FROM QUESTIONS TO FORMS',`<section><p class="panel-intro">调研、用户画像、造型与方案推演。这里引用项目中的原始过程资料。</p><div class="process-index">${ids.map(id=>{const p=project(id),index=id==='dayibu'?2:id==='tea'?4:1;return `<button class="process-card" data-process="${id}" data-page-start="${index}">${assetImage(shot(id,index),'loading="lazy"',true)}<span><b>${p.title}</b><small>${count(id)} 张项目图与过程页面 ↗</small></span></button>`;}).join('')}</div></section>`);
+    const ids=['dayibu','tea','robot','train','hike'];
+    display('翻一翻设计过程','SKETCHBOOK / FROM QUESTIONS TO FORMS',`<section><p class="panel-intro">调研、用户画像、造型与方案推演。这里引用项目中的原始过程资料。</p><div class="process-index">${ids.map(id=>{const p=project(id),index=id==='dayibu'?1:id==='tea'?4:1;return `<button class="process-card" data-process="${id}" data-page-start="${index}">${assetImage(shot(id,index),'loading="lazy"',true)}<span><b>${p.title}</b><small>${count(id)} 张项目图与过程页面 ↗</small></span></button>`;}).join('')}</div></section>`);
   }
   async function fetchNotes(){
     const version=++noteReadVersion;
